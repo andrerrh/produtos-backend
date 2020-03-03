@@ -1,36 +1,70 @@
 const express = require('express');
+const mongoose = require('mongoose');
+const Produto = require('./schema');
 
 const server = express();
 
-var produtos = [
-    {
-        id: 1,
-        nome: 'Computador',
-        preco: 1200.00
-    },
-    {
-        id: 2,
-        nome: 'mouse',
-        preco: 20.50
-    },
-    {
-        id: 4,
-        nome: 'Teclado',
-        preco: 220.90
-    }
-];
+const mongoURL = "mongodb+srv://user:senha@clusterlp3-crunr.mongodb.net/dbproduto?retryWrites=true&w=majority"
 
-server.get('/produto', (request, response) => {
-    response.json(produtos);
+const db = mongoose.connect(mongoURL, 
+    { useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false
+    })
+
+// var produtos = [
+//     {
+//         id: 1,
+//         nome: 'Computador', 
+//         preco: 1200.00
+//     },
+//     {
+//         id: 2,
+//         nome: 'mouse',
+//         preco: 20.50
+//     },
+//     {
+//         id: 4,
+//         nome: 'Teclado',
+//         preco: 220.90
+//     }
+// ];
+
+server.use(express.json());
+
+
+server.get('/produto',  async function(request, response) {
+    const produtos = await Produto.find();
+    return response.json(produtos);
 })
 
-server.get('/produto/:id', function(request, response){
-    
+server.get('/produto/:id', async function(request, response) {
     const id = request.params.id;
+    const produtos = await Produto.findById(id);
+    return response.json(produtos);
+})
 
-    const produto = produtos.filter(p => p.id == id);
+server.post('/produto', function(request, response) {
+    const novoProduto = request.body;
+    Produto.create(novoProduto);
+    return response.status(201).send();
+})
+
+server.put('/produto/:id', async function(request, response) {
+    const id = request.params.id;
+    const produto = request.body;
     
-    return response.json(produto);
+    await Produto.findByIdAndUpdate(id, produto)
+
+    return response.status(201).send()
+})
+
+server.delete('/produto/:id', async function(request, response) {
+    const id = request.params.id;
+    
+    await Produto.findByIdAndRemove(id);
+
+    return response.status(200).send();
 })
 
 server.listen(3000);
