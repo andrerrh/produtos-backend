@@ -44,16 +44,17 @@ server.get('/produto/:id', async function(request, response) {
     return response.json(produtos);
 })
 
-server.post('/produto', function(request, response) {
+server.post('/produto', async function(request, response) {
     const novoProduto = request.body;
-    Produto.create(novoProduto);
+    await Produto.create(novoProduto);
     return response.status(201).send();
 })
 
 server.put('/produto/:id', async function(request, response) {
     const id = request.params.id;
     const produto = request.body;
-    
+    console.log(produto)
+
     await Produto.findByIdAndUpdate(id, produto)
 
     return response.status(201).send()
@@ -62,7 +63,7 @@ server.put('/produto/:id', async function(request, response) {
 server.delete('/produto/:id', async function(request, response) {
     const id = request.params.id;
     
-    await Produto.findByIdAndRemove(id);
+    await Produto.findOneAndRemove({_id: id});
 
     return response.status(200).send();
 })
